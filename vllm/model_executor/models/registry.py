@@ -183,6 +183,10 @@ _SPECULATIVE_DECODING_MODELS = {
     "MedusaModel": ("medusa", "Medusa"),
     "MLPSpeculatorPreTrainedModel": ("mlp_speculator", "MLPSpeculator"),
 }
+
+_FALLBACK_MODEL = {
+    "TransformersModel": ("transformers", "TransformersModel"),
+}
 # yapf: enable
 
 _VLLM_MODELS = {
@@ -191,6 +195,7 @@ _VLLM_MODELS = {
     **_CROSS_ENCODER_MODELS,
     **_MULTIMODAL_MODELS,
     **_SPECULATIVE_DECODING_MODELS,
+    **_FALLBACK_MODEL,
 }
 
 
@@ -377,7 +382,12 @@ class _ModelRegistry:
         if not architectures:
             logger.warning("No model architectures are specified")
 
-        return architectures
+        normalized_arch = []
+        for model in architectures:
+            if model not in self.models:
+                model = "TransformersModel"
+            normalized_arch.append(model)
+        return normalized_arch
 
     def inspect_model_cls(
         self,
